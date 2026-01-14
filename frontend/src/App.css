@@ -1,0 +1,10 @@
+/* App styles */
+#root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1b26 0%, #24283b 50%, #1f2335 100%);
+}
+
+.mantine-Container-root {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
