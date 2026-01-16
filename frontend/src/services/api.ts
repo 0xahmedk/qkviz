@@ -31,8 +31,10 @@ export interface EpochSnapshot {
   loss: number;
   predicted_text: string;
   attention_weights: number[][];
-  input_tokens: string;
-  target_tokens: string;
+  q_vectors: number[][]; // NEW: Query vectors [seq_len, head_size]
+  k_vectors: number[][]; // NEW: Key vectors [seq_len, head_size]
+  input_tokens: string[]; // Array of token strings
+  target_tokens: string[]; // Array of token strings
 }
 
 export interface SimulateResponse {

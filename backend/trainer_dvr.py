@@ -98,6 +98,25 @@ def simulate_training_run(text_corpus: str, hyperparameters: dict):
                 attn_matrix = attention_weights[0][0].detach().cpu().tolist()
             else:
                 attn_matrix = []
+            
+            # Get Q and K vectors from Head 0 of last layer
+            q_vectors = internals.get('q_vectors', None)
+            k_vectors = internals.get('k_vectors', None)
+            
+            q_vectors_list = []
+            k_vectors_list = []
+            
+            if q_vectors is not None and k_vectors is not None:
+                # Shape: (B, T, head_size) -> Extract batch 0: (T, head_size)
+                q_vectors_list = q_vectors[0].detach().cpu().tolist()
+                k_vectors_list = k_vectors[0].detach().cpu().tolist()
+        
+        # Get actual token strings (not decoded text)
+        input_token_ids = x[0].cpu().tolist()
+        input_token_list = [tokenizer.idx_to_token[idx] for idx in input_token_ids]
+        
+        target_token_ids = y[0].cpu().tolist()
+        target_token_list = [tokenizer.idx_to_token[idx] for idx in target_token_ids]
         
         # Record snapshot
         snapshot = {
@@ -105,8 +124,10 @@ def simulate_training_run(text_corpus: str, hyperparameters: dict):
             'loss': loss.item(),
             'predicted_text': predicted_text,
             'attention_weights': attn_matrix,
-            'input_tokens': tokenizer.decode(x[0].cpu().tolist()),
-            'target_tokens': tokenizer.decode(y[0].cpu().tolist())
+            'q_vectors': q_vectors_list,
+            'k_vectors': k_vectors_list,
+            'input_tokens': input_token_list,  # Send as list of tokens
+            'target_tokens': target_token_list  # Send as list of tokens
         }
         history.append(snapshot)
         

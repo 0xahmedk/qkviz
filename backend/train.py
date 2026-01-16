@@ -12,7 +12,7 @@ from data import load_data, get_batch, save_tokenizer
 # Hyperparameters
 BATCH_SIZE = 32
 BLOCK_SIZE = 128
-MAX_ITERS = 5000
+MAX_ITERS = 1000
 EVAL_INTERVAL = 500
 LEARNING_RATE = 3e-4
 EVAL_ITERS = 200

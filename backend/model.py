@@ -19,7 +19,7 @@ class Head(nn.Module):
         self.register_buffer('tril', torch.tril(torch.ones(block_size, block_size)))
         self.dropout = nn.Dropout(dropout)
         
-    def forward(self, x, return_attention_weights=False):
+    def forward(self, x, return_attention_weights=False, return_qk_vectors=False):
         B, T, C = x.shape
         k = self.key(x)   # (B, T, head_size)
         q = self.query(x) # (B, T, head_size)
@@ -34,8 +34,13 @@ class Head(nn.Module):
         v = self.value(x)  # (B, T, head_size)
         out = wei_dropped @ v      # (B, T, head_size)
         
-        if return_attention_weights:
-            return out, wei_softmax
+        if return_attention_weights or return_qk_vectors:
+            result = [out]
+            if return_attention_weights:
+                result.append(wei_softmax)
+            if return_qk_vectors:
+                result.append({'q': q, 'k': k})
+            return tuple(result) if len(result) > 1 else out
         return out
 
 
@@ -48,18 +53,45 @@ class MultiHeadAttention(nn.Module):
         self.proj = nn.Linear(n_embd, n_embd)
         self.dropout = nn.Dropout(dropout)
         
-    def forward(self, x, return_attention_weights=False):
-        if return_attention_weights:
+    def forward(self, x, return_attention_weights=False, return_qk_vectors=False):
+        if return_attention_weights or return_qk_vectors:
             head_outputs = []
             attention_weights = []
-            for h in self.heads:
-                out, wei = h(x, return_attention_weights=True)
-                head_outputs.append(out)
-                attention_weights.append(wei)
+            qk_vectors = None  # Only capture from Head 0
+            
+            for i, h in enumerate(self.heads):
+                # For Head 0, capture Q and K vectors if requested
+                if i == 0 and return_qk_vectors:
+                    result = h(x, return_attention_weights=return_attention_weights, return_qk_vectors=True)
+                    if return_attention_weights:
+                        out, wei, qk = result
+                        head_outputs.append(out)
+                        attention_weights.append(wei)
+                        qk_vectors = qk
+                    else:
+                        out, qk = result
+                        head_outputs.append(out)
+                        qk_vectors = qk
+                else:
+                    # Other heads
+                    if return_attention_weights:
+                        out, wei = h(x, return_attention_weights=True)
+                        head_outputs.append(out)
+                        attention_weights.append(wei)
+                    else:
+                        out = h(x)
+                        head_outputs.append(out)
+            
             out = torch.cat(head_outputs, dim=-1)
             out = self.dropout(self.proj(out))
-            # Return the attention weights from all heads
-            return out, attention_weights
+            
+            # Build return tuple based on what was requested
+            result = [out]
+            if return_attention_weights:
+                result.append(attention_weights)
+            if return_qk_vectors:
+                result.append(qk_vectors)
+            return tuple(result) if len(result) > 1 else out
         else:
             out = torch.cat([h(x) for h in self.heads], dim=-1)
             out = self.dropout(self.proj(out))
@@ -93,13 +125,31 @@ class Block(nn.Module):
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
         
-    def forward(self, x, return_attention_weights=False):
+    def forward(self, x, return_attention_weights=False, return_qk_vectors=False):
         # Pre-norm formulation
-        if return_attention_weights:
-            sa_out, attn_weights = self.sa(self.ln1(x), return_attention_weights=True)
+        if return_attention_weights or return_qk_vectors:
+            result = self.sa(self.ln1(x), return_attention_weights=return_attention_weights, return_qk_vectors=return_qk_vectors)
+            
+            # Unpack result based on what was requested
+            if return_attention_weights and return_qk_vectors:
+                sa_out, attn_weights, qk_vectors = result
+            elif return_attention_weights:
+                sa_out, attn_weights = result
+                qk_vectors = None
+            else:  # only return_qk_vectors
+                sa_out, qk_vectors = result
+                attn_weights = None
+            
             x = x + sa_out
             x = x + self.ffwd(self.ln2(x))
-            return x, attn_weights
+            
+            # Build return tuple
+            result = [x]
+            if return_attention_weights:
+                result.append(attn_weights)
+            if return_qk_vectors:
+                result.append(qk_vectors)
+            return tuple(result) if len(result) > 1 else x
         else:
             x = x + self.sa(self.ln1(x))
             x = x + self.ffwd(self.ln2(x))
@@ -142,11 +192,12 @@ class GPTLanguageModel(nn.Module):
         
         # Pass through blocks
         if return_internals:
-            # Collect attention weights from the last layer
+            # Collect attention weights and Q/K vectors from the last layer
             all_attn_weights = None
+            qk_vectors = None
             for i, block in enumerate(self.blocks):
                 if i == len(self.blocks) - 1:  # Last layer
-                    x, all_attn_weights = block(x, return_attention_weights=True)
+                    x, all_attn_weights, qk_vectors = block(x, return_attention_weights=True, return_qk_vectors=True)
                 else:
                     x = block(x, return_attention_weights=False)
         else:
@@ -168,6 +219,11 @@ class GPTLanguageModel(nn.Module):
             if all_attn_weights is not None:
                 # all_attn_weights is a list of attention weights per head
                 internals['attention_weights'] = all_attn_weights
+            if qk_vectors is not None:
+                # qk_vectors contains Q and K tensors from Head 0
+                # Shape: (B, T, head_size)
+                internals['q_vectors'] = qk_vectors['q']
+                internals['k_vectors'] = qk_vectors['k']
             if loss is not None:
                 internals['loss'] = loss
             return logits, internals

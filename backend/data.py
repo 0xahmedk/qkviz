@@ -9,12 +9,18 @@ import re
 
 
 class WordTokenizer:
-    """Simple word-level tokenizer that treats words and special characters as tokens"""
+    """
+    Space-prefix tokenizer (similar to SentencePiece/BPE strategy).
+    Attaches preceding space to each word, reducing visual noise in attention matrices.
+    
+    Example: "The quick brown" -> ['The', ' quick', ' brown']
+    """
     
     def __init__(self, text):
-        # Tokenize text into words and special characters
-        # This regex splits on whitespace while keeping punctuation separate
-        tokens = re.findall(r'\w+|[^\w\s]|\s+', text)
+        # Tokenize using space-prefix strategy
+        # Pattern: r' ?\S+' matches optional space followed by non-whitespace
+        # This eliminates standalone space tokens and attaches spaces to words
+        tokens = re.findall(r' ?\S+', text)
         
         # Get all unique tokens
         unique_tokens = sorted(list(set(tokens)))
@@ -25,12 +31,12 @@ class WordTokenizer:
         self.idx_to_token = {i: token for i, token in enumerate(unique_tokens)}
         
     def encode(self, text):
-        """Convert text to list of integers"""
-        tokens = re.findall(r'\w+|[^\w\s]|\s+', text)
+        """Convert text to list of integers using space-prefix tokenization"""
+        tokens = re.findall(r' ?\S+', text)
         return [self.token_to_idx.get(token, 0) for token in tokens]
     
     def decode(self, indices):
-        """Convert list of integers to text"""
+        """Convert list of integers to text (join with empty string since spaces are embedded)"""
         return ''.join([self.idx_to_token.get(i, '') for i in indices])
 
 

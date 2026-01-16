@@ -24,6 +24,7 @@ import {
 } from "@tabler/icons-react";
 import "./TrainingLab.css";
 import { simulateTraining, type SimulateResponse } from "../services/api";
+import { VectorInspector } from "../components/VectorInspector";
 
 interface HoveredCell {
   row: number;
@@ -31,6 +32,14 @@ interface HoveredCell {
   value: number;
   sourceToken: string;
   targetToken: string;
+}
+
+interface InspectorState {
+  opened: boolean;
+  tokenI: string;
+  tokenJ: string;
+  row: number;
+  col: number;
 }
 
 export function TrainingLab() {
@@ -54,6 +63,15 @@ export function TrainingLab() {
 
   // Attention matrix hover state
   const [hoveredCell, setHoveredCell] = useState<HoveredCell | null>(null);
+
+  // Vector Inspector state
+  const [inspectorState, setInspectorState] = useState<InspectorState>({
+    opened: false,
+    tokenI: "",
+    tokenJ: "",
+    row: -1,
+    col: -1,
+  });
 
   // Auto-play logic
   useEffect(() => {
@@ -110,11 +128,6 @@ export function TrainingLab() {
   };
 
   // Helper function to tokenize text (matches backend word tokenizer)
-  const tokenizeText = (text: string): string[] => {
-    const tokens = text.match(/\w+|[^\w\s]|\s+/g) || [];
-    return tokens;
-  };
-
   const currentSnapshot = trainingHistory?.history[currentFrame];
   const improvementPercent = trainingHistory
     ? (
@@ -449,7 +462,7 @@ export function TrainingLab() {
                         Input Sequence:
                       </Text>
                       <Code block style={{ fontSize: "14px", padding: "12px" }}>
-                        {currentSnapshot?.input_tokens || ""}
+                        {currentSnapshot?.input_tokens?.join("") || ""}
                       </Code>
                     </div>
 
@@ -458,7 +471,7 @@ export function TrainingLab() {
                         Target (Correct):
                       </Text>
                       <Code block style={{ fontSize: "14px", padding: "12px" }}>
-                        {currentSnapshot?.target_tokens || ""}
+                        {currentSnapshot?.target_tokens?.join("") || ""}
                       </Code>
                     </div>
 
@@ -547,10 +560,8 @@ export function TrainingLab() {
                       <div className="attention-heatmap">
                         {currentSnapshot.attention_weights.map(
                           (row: number[], i: number) => {
-                            // Tokenize input to get individual words
-                            const tokens = tokenizeText(
-                              currentSnapshot.input_tokens
-                            );
+                            // Use tokens directly from backend (already tokenized correctly)
+                            const tokens = currentSnapshot.input_tokens;
 
                             return (
                               <div key={i} className="attention-row">
@@ -582,9 +593,18 @@ export function TrainingLab() {
                                           });
                                         }
                                       }}
-                                      onMouseLeave={() =>
-                                        setHoveredCell(null)
-                                      }
+                                      onMouseLeave={() => setHoveredCell(null)}
+                                      onClick={() => {
+                                        if (!isZero) {
+                                          setInspectorState({
+                                            opened: true,
+                                            tokenI: targetToken,
+                                            tokenJ: sourceToken,
+                                            row: i,
+                                            col: j,
+                                          });
+                                        }
+                                      }}
                                     />
                                   );
                                 })}
@@ -624,6 +644,33 @@ export function TrainingLab() {
             )}
           </Grid.Col>
         </Grid>
+
+        {/* Vector Inspector Modal */}
+        {inspectorState.opened &&
+          currentSnapshot?.q_vectors &&
+          currentSnapshot?.k_vectors && (
+            <VectorInspector
+              opened={inspectorState.opened}
+              onClose={() =>
+                setInspectorState({
+                  opened: false,
+                  tokenI: "",
+                  tokenJ: "",
+                  row: -1,
+                  col: -1,
+                })
+              }
+              tokenI={inspectorState.tokenI}
+              tokenJ={inspectorState.tokenJ}
+              qVector={currentSnapshot.q_vectors[inspectorState.row] || []}
+              kVector={currentSnapshot.k_vectors[inspectorState.col] || []}
+              attentionScore={
+                currentSnapshot.attention_weights[inspectorState.row]?.[
+                  inspectorState.col
+                ] || 0
+              }
+            />
+          )}
       </Stack>
     </Container>
   );
