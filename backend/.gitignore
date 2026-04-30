@@ -34,9 +34,6 @@ ENV/
 *~
 
 # Model files (large)
-*.pth
-*.pkl
-*.pt
 
 # Logs
 *.log
