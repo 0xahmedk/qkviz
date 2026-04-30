@@ -53,8 +53,8 @@ export function GenerationControls({
           value={mode}
           onChange={(value) => setMode(value as "auto" | "manual")}
           data={[
-            { value: "auto", label: "🚀 Auto Generate" },
-            { value: "manual", label: "👆 Manual Step-by-Step" },
+            { value: "auto", label: "Auto Generate" },
+            { value: "manual", label: "Manual Step-by-Step" },
           ]}
           size="md"
         />

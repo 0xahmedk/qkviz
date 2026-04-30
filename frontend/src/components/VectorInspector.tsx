@@ -93,7 +93,7 @@ export function VectorInspector({
             <Paper p="sm" withBorder bg="grape.9">
               <Stack gap="xs">
                 <Text size="sm" fw={600} c="grape.1">
-                  📊 Attention Math
+                  Attention Math
                 </Text>
                 <Group gap="md">
                   <div>
@@ -139,8 +139,8 @@ export function VectorInspector({
             {scaledScore > 0.1
               ? `High alignment! The query and key vectors point in similar directions. Green bars show dimensions where both vectors are strongly positive.`
               : scaledScore < -0.1
-              ? `Negative alignment. The vectors point in opposite directions, reducing attention.`
-              : `Low alignment. The vectors are mostly orthogonal (perpendicular), resulting in weak attention.`}
+                ? `Negative alignment. The vectors point in opposite directions, reducing attention.`
+                : `Low alignment. The vectors are mostly orthogonal (perpendicular), resulting in weak attention.`}
           </Text>
         </Paper>
 
@@ -175,10 +175,10 @@ export function VectorInspector({
                               alignment === "aligned"
                                 ? "rgba(64, 192, 87, 0.8)"
                                 : alignment === "opposite"
-                                ? "rgba(250, 82, 82, 0.8)"
-                                : isPositive
-                                ? "rgba(240, 62, 162, 0.6)"
-                                : "rgba(240, 62, 162, 0.3)",
+                                  ? "rgba(250, 82, 82, 0.8)"
+                                  : isPositive
+                                    ? "rgba(240, 62, 162, 0.6)"
+                                    : "rgba(240, 62, 162, 0.3)",
                           }}
                           title={`Dim ${idx}: ${value.toFixed(3)}`}
                         />
@@ -232,10 +232,10 @@ export function VectorInspector({
                               alignment === "aligned"
                                 ? "rgba(64, 192, 87, 0.8)"
                                 : alignment === "opposite"
-                                ? "rgba(250, 82, 82, 0.8)"
-                                : isPositive
-                                ? "rgba(34, 184, 207, 0.6)"
-                                : "rgba(34, 184, 207, 0.3)",
+                                  ? "rgba(250, 82, 82, 0.8)"
+                                  : isPositive
+                                    ? "rgba(34, 184, 207, 0.6)"
+                                    : "rgba(34, 184, 207, 0.3)",
                           }}
                           title={`Dim ${idx}: ${value.toFixed(3)}`}
                         />

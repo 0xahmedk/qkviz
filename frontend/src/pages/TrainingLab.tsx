@@ -45,7 +45,7 @@ interface InspectorState {
 export function TrainingLab() {
   // Input controls
   const [text, setText] = useState(
-    "The quick brown fox jumps over the lazy dog"
+    "The quick brown fox jumps over the lazy dog",
   );
   const [epochs, setEpochs] = useState(10);
   const [learningRate, setLearningRate] = useState(0.01);
@@ -146,7 +146,7 @@ export function TrainingLab() {
           <Group justify="space-between" align="center">
             <div>
               <Title order={1} size="h2">
-                🧪 Training Lab
+                Training Lab
               </Title>
               <Text size="sm" c="dimmed" mt={4}>
                 Watch a model learn on your text in real-time
@@ -610,7 +610,7 @@ export function TrainingLab() {
                                 })}
                               </div>
                             );
-                          }
+                          },
                         )}
                       </div>
                     ) : (

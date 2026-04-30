@@ -70,13 +70,13 @@ function App() {
       } else {
         setBackendStatus("error");
         setErrorMessage(
-          "Backend is running but model is not loaded. Please train the model first."
+          "Backend is running but model is not loaded. Please train the model first.",
         );
       }
     } catch {
       setBackendStatus("error");
       setErrorMessage(
-        "Cannot connect to backend. Make sure the API server is running on http://localhost:8000"
+        "Cannot connect to backend. Make sure the API server is running on http://localhost:8000",
       );
     }
   }, []);
@@ -117,7 +117,7 @@ function App() {
       // The model selected the first prediction (or we sample from them)
       const selectedToken = response.generated_token;
       const selectedIdx = response.next_token_predictions.findIndex(
-        (p) => p.token === selectedToken
+        (p) => p.token === selectedToken,
       );
       setSelectedPredictionIndex(selectedIdx >= 0 ? selectedIdx : 0);
 
@@ -187,7 +187,7 @@ function App() {
           <Group justify="space-between" align="center">
             <div>
               <Title order={1} size="h2">
-                🧠 QKViz - Interactive LLM Visualization
+                QKViz - Interactive LLM Visualization
               </Title>
               <Text size="sm" c="dimmed" mt={4}>
                 Explore how QKViz visualizes the workings of language models,
@@ -211,8 +211,8 @@ function App() {
               {backendStatus === "checking"
                 ? "Connecting..."
                 : backendStatus === "connected"
-                ? "Connected"
-                : "Offline"}
+                  ? "Connected"
+                  : "Offline"}
             </Badge>
           </Group>
         </Paper>

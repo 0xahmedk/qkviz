@@ -126,7 +126,7 @@ export function ProbabilityChart({
         </Stack>
 
         <Text size="xs" c="dimmed" mt="xs">
-          📊 These are the model's confidence scores for the next token. The
+          These are the model's confidence scores for the next token. The
           selected token (highlighted in green) is what the model chose.
         </Text>
       </Stack>

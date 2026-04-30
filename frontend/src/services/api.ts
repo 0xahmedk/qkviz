@@ -1,6 +1,6 @@
 // API service for communicating with the QKViz backend
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://localhost:8001";
 
 export interface TokenPrediction {
   token: string;
@@ -67,7 +67,7 @@ export async function checkHealth(): Promise<HealthResponse> {
 export async function generateNextToken(
   context: string,
   temperature: number = 1.0,
-  topK: number = 5
+  topK: number = 5,
 ): Promise<GenerateResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/generate`, {
@@ -99,7 +99,7 @@ export async function generateNextToken(
 export async function generateSequence(
   context: string,
   temperature: number = 1.0,
-  maxTokens: number = 100
+  maxTokens: number = 100,
 ): Promise<GenerateSequenceResponse> {
   try {
     const response = await fetch(
@@ -113,7 +113,7 @@ export async function generateSequence(
           context,
           temperature,
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -156,7 +156,7 @@ export async function simulateTraining(
   embedDim: number = 32,
   nHead: number = 2,
   nLayer: number = 2,
-  blockSize: number = 64
+  blockSize: number = 64,
 ): Promise<SimulateResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/simulate`, {
@@ -178,7 +178,8 @@ export async function simulateTraining(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.detail || `Training simulation failed: ${response.statusText}`
+        errorData.detail ||
+          `Training simulation failed: ${response.statusText}`,
       );
     }
 
