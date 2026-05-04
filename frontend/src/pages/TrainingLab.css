@@ -1,44 +1,66 @@
 .attention-heatmap {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 8px;
-  border-radius: 4px;
+  gap: 2px; /* Keep small gap for visual separation */
+  background-color: #0a0a0a; /* Deep Black */
+  padding: 8px; /* Standardize padding */
+  border-radius: 0; /* Sharp corners */
   overflow: auto;
-  max-height: 400px;
+  max-width: 100%; /* Ensure full width */
+  border: 1px solid #333; /* Solid border */
 }
 
 .attention-row {
   display: flex;
-  gap: 2px;
+  gap: 2px; /* Keep small gap for visual separation */
 }
 
 .attention-cell {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  min-height: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 24px; /* Adjust size for better visibility, multiple of 8px */
+  height: 24px; /* Adjust size for better visibility, multiple of 8px */
+  min-width: 24px;
+  min-height: 24px;
+  border: 1px solid #333; /* Solid border */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease; /* Smooth transition for hover */
   position: relative;
 }
 
 .attention-cell:hover {
-  transform: scale(1.3);
-  border-color: rgba(255, 255, 255, 0.8);
-  border-width: 2px;
+  transform: none; /* Remove scale transform */
+  border-color: #22c55e; /* Green border on hover */
+  border-width: 1px; /* Keep border width consistent */
   z-index: 10;
-  box-shadow: 0 0 10px rgba(134, 46, 156, 0.5);
+  box-shadow: none; /* Remove shadow */
+  background-color: rgba(
+    34,
+    197,
+    94,
+    0.8
+  ) !important; /* Fill with green on hover */
 }
 
 .attention-cell[style*="cursor: not-allowed"] {
   opacity: 0.3;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.3
+  ) !important; /* Ensure masked cells remain dark */
 }
 
 .attention-cell[style*="cursor: not-allowed"]:hover {
   transform: none;
   border-width: 1px;
   box-shadow: none;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.3
+  ) !important; /* No hover effect for not-allowed */
+  border-color: #333; /* Reset border color */
 }

@@ -25,17 +25,40 @@ export function ProbabilityChart({
 }: ProbabilityChartProps) {
   if (predictions.length === 0) {
     return (
-      <Paper p="md" radius="md" withBorder style={{ height: "100%" }}>
+      <Paper
+        p="24px"
+        radius={0}
+        withBorder
+        style={{
+          height: "100%",
+          borderColor: "#333",
+          backgroundColor: "#1A1A1A",
+        }}
+      >
         <Stack
-          gap="md"
+          gap="16px"
           align="center"
           justify="center"
           style={{ minHeight: 200 }}
         >
-          <Text size="lg" fw={600} c="dimmed">
+          <Text
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "#F5F5F5",
+              lineHeight: 1.6,
+            }}
+          >
             Top 5 Predictions
           </Text>
-          <Text size="sm" c="dimmed" ta="center">
+          <Text
+            style={{
+              fontSize: "14px",
+              color: "#F5F5F5",
+              textAlign: "center",
+              lineHeight: 1.6,
+            }}
+          >
             Click "Generate Next Token" to see the model's predictions
           </Text>
         </Stack>
@@ -44,36 +67,69 @@ export function ProbabilityChart({
   }
 
   return (
-    <Paper p="md" radius="md" withBorder style={{ height: "100%" }}>
-      <Stack gap="md">
+    <Paper
+      p="24px"
+      radius={0}
+      withBorder
+      style={{
+        height: "100%",
+        borderColor: "#333",
+        backgroundColor: "#1A1A1A",
+      }}
+    >
+      <Stack gap="16px">
         <Group justify="space-between">
-          <Text size="lg" fw={600}>
+          <Text
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "#F5F5F5",
+              lineHeight: 1.6,
+            }}
+          >
             Top 5 Next Token Predictions
           </Text>
-          <Badge variant="gradient" gradient={{ from: "blue", to: "cyan" }}>
+          <Badge
+            color="gray"
+            style={{
+              borderRadius: 0,
+              backgroundColor: "#333",
+              color: "#F5F5F5",
+              border: "1px solid #555",
+            }}
+          >
             Live
           </Badge>
         </Group>
 
-        <Stack gap="sm">
+        <Stack gap="8px">
           {predictions.map((pred, idx) => {
             const isSelected = idx === selectedIndex;
             const percentage = (pred.probability * 100).toFixed(1);
 
             // Display token with special handling for whitespace
             let displayToken = pred.token;
-            if (pred.token === " ") displayToken = "␣"; // Space symbol
-            else if (pred.token === "\n") displayToken = "↵"; // Newline symbol
+            if (pred.token === " ")
+              displayToken = "␣"; // Space symbol
+            else if (pred.token === "\n")
+              displayToken = "↵"; // Newline symbol
             else if (pred.token === "\t") displayToken = "⇥"; // Tab symbol
+
+            const progressColor =
+              pred.probability > 0.5 ? "#22C55E" : "#EF4444"; // Green for good, Red for bad
 
             return (
               <div key={idx}>
-                <Group justify="space-between" mb={4}>
-                  <Group gap="xs">
+                <Group justify="space-between" mb="4px">
+                  <Group gap="4px">
                     <Badge
                       size="lg"
-                      variant={isSelected ? "filled" : "light"}
-                      color={isSelected ? "green" : "blue"}
+                      style={{
+                        borderRadius: 0,
+                        backgroundColor: isSelected ? "#22C55E" : "#333",
+                        color: isSelected ? "#0A0A0A" : "#F5F5F5",
+                        border: `1px solid ${isSelected ? "#22C55E" : "#555"}`,
+                      }}
                     >
                       #{idx + 1}
                     </Badge>
@@ -82,27 +138,35 @@ export function ProbabilityChart({
                         fontSize: "14px",
                         fontWeight: isSelected ? 600 : 400,
                         padding: "4px 8px",
-                        backgroundColor: isSelected
-                          ? "rgba(64, 192, 87, 0.2)"
-                          : undefined,
-                        border: isSelected
-                          ? "2px solid rgba(64, 192, 87, 0.5)"
-                          : undefined,
+                        backgroundColor: isSelected ? "#22C55E" : "#1A1A1A",
+                        color: isSelected ? "#0A0A0A" : "#F5F5F5",
+                        border: `1px solid ${isSelected ? "#22C55E" : "#555"}`,
+                        borderRadius: 0,
                       }}
                     >
                       {displayToken}
                     </Code>
                   </Group>
-                  <Group gap="xs">
+                  <Group gap="4px">
                     <Text
-                      size="sm"
-                      fw={isSelected ? 600 : 500}
-                      c={isSelected ? "green" : undefined}
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: isSelected ? 600 : 500,
+                        color: isSelected ? "#22C55E" : "#F5F5F5",
+                      }}
                     >
                       {percentage}%
                     </Text>
                     {isSelected && (
-                      <Badge size="sm" color="green" variant="dot">
+                      <Badge
+                        size="sm"
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: "#22C55E",
+                          color: "#0A0A0A",
+                          border: "1px solid #22C55E",
+                        }}
+                      >
                         Selected
                       </Badge>
                     )}
@@ -111,13 +175,11 @@ export function ProbabilityChart({
                 <Progress
                   value={pred.probability * 100}
                   size="xl"
-                  radius="md"
-                  color={isSelected ? "green" : "blue"}
+                  radius={0}
+                  color={progressColor}
                   animated={isSelected}
                   style={{
-                    boxShadow: isSelected
-                      ? "0 0 10px rgba(64, 192, 87, 0.4)"
-                      : undefined,
+                    border: `1px solid ${progressColor}`,
                   }}
                 />
               </div>
@@ -125,7 +187,14 @@ export function ProbabilityChart({
           })}
         </Stack>
 
-        <Text size="xs" c="dimmed" mt="xs">
+        <Text
+          style={{
+            fontSize: "12px",
+            color: "#F5F5F5",
+            marginTop: "8px",
+            lineHeight: 1.6,
+          }}
+        >
           These are the model's confidence scores for the next token. The
           selected token (highlighted in green) is what the model chose.
         </Text>

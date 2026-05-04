@@ -23,9 +23,66 @@ export function ActionButtons({
   onReset,
   disabled,
 }: ActionButtonsProps) {
+  const buttonStyles = {
+    root: {
+      borderRadius: 0,
+      border: "1px solid #333",
+      backgroundColor: "transparent",
+      color: "#F5F5F5",
+      "&:hover": {
+        backgroundColor: "#22C55E",
+        color: "#0A0A0A",
+      },
+      "&[data-disabled]": {
+        borderColor: "#555",
+        color: "#888",
+        backgroundColor: "transparent",
+        "&:hover": {
+          backgroundColor: "transparent",
+          color: "#888",
+        },
+      },
+    },
+    inner: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+    leftSection: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+  };
+
+  const stopButtonStyles = {
+    root: {
+      ...buttonStyles.root,
+      borderColor: "#EF4444",
+      "&:hover": {
+        backgroundColor: "#EF4444",
+        color: "#0A0A0A",
+      },
+    },
+    inner: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+    leftSection: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+  };
+
   if (mode === "auto") {
     return (
-      <Group justify="center" gap="md">
+      <Group justify="center" gap="16px">
         {!isGenerating ? (
           <>
             <Button
@@ -33,8 +90,7 @@ export function ActionButtons({
               leftSection={<IconPlayerPlay size={20} />}
               onClick={onGenerate}
               disabled={disabled}
-              variant="gradient"
-              gradient={{ from: "blue", to: "cyan" }}
+              styles={buttonStyles}
             >
               Generate Text
             </Button>
@@ -42,8 +98,7 @@ export function ActionButtons({
               size="lg"
               leftSection={<IconRefresh size={20} />}
               onClick={onReset}
-              variant="light"
-              color="gray"
+              styles={buttonStyles}
             >
               Reset
             </Button>
@@ -53,8 +108,7 @@ export function ActionButtons({
             size="lg"
             leftSection={<IconPlayerStop size={20} />}
             onClick={onStop}
-            color="red"
-            variant="filled"
+            styles={stopButtonStyles}
           >
             Stop Generation
           </Button>
@@ -65,14 +119,13 @@ export function ActionButtons({
 
   // Manual mode
   return (
-    <Group justify="center" gap="md">
+    <Group justify="center" gap="16px">
       <Button
         size="lg"
         leftSection={<IconArrowRight size={20} />}
         onClick={onGenerate}
         disabled={disabled || isGenerating}
-        variant="gradient"
-        gradient={{ from: "blue", to: "cyan" }}
+        styles={buttonStyles}
       >
         Generate Next Token
       </Button>
@@ -80,8 +133,7 @@ export function ActionButtons({
         size="lg"
         leftSection={<IconRefresh size={20} />}
         onClick={onReset}
-        variant="light"
-        color="gray"
+        styles={buttonStyles}
         disabled={isGenerating}
       >
         Reset

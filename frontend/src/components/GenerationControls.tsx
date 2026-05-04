@@ -30,9 +30,16 @@ export function GenerationControls({
   setMode,
 }: GenerationControlsProps) {
   return (
-    <Paper p="md" radius="md" withBorder>
-      <Stack gap="md">
-        <Text size="lg" fw={600}>
+    <Paper p="24px" radius={0} withBorder style={{ borderColor: "#333" }}>
+      <Stack gap="24px">
+        <Text
+          style={{
+            fontSize: "20px",
+            fontWeight: 800,
+            color: "#F5F5F5",
+            lineHeight: 1.6,
+          }}
+        >
           Generation Controls
         </Text>
 
@@ -44,6 +51,20 @@ export function GenerationControls({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           size="md"
+          styles={{
+            label: { color: "#F5F5F5", fontSize: "14px", lineHeight: 1.6 },
+            description: {
+              color: "#F5F5F5",
+              fontSize: "12px",
+              lineHeight: 1.6,
+            },
+            input: {
+              backgroundColor: "#1A1A1A",
+              color: "#F5F5F5",
+              borderColor: "#333",
+              borderRadius: 0,
+            },
+          }}
         />
 
         {/* Mode Selection */}
@@ -57,15 +78,43 @@ export function GenerationControls({
             { value: "manual", label: "Manual Step-by-Step" },
           ]}
           size="md"
+          styles={{
+            label: { color: "#F5F5F5", fontSize: "14px", lineHeight: 1.6 },
+            description: {
+              color: "#F5F5F5",
+              fontSize: "12px",
+              lineHeight: 1.6,
+            },
+            input: {
+              backgroundColor: "#1A1A1A",
+              color: "#F5F5F5",
+              borderColor: "#333",
+              borderRadius: 0,
+            },
+            dropdown: {
+              backgroundColor: "#1A1A1A",
+              borderColor: "#333",
+              borderRadius: 0,
+            },
+            option: {
+              color: "#F5F5F5",
+              "&[data-selected]": {
+                backgroundColor: "#22C55E",
+                color: "#0A0A0A",
+              },
+            },
+          }}
         />
 
         {/* Max Tokens Slider */}
         <div>
-          <Group justify="space-between" mb={8}>
-            <Text size="sm" fw={500}>
+          <Group justify="space-between" mb="8px">
+            <Text
+              style={{ color: "#F5F5F5", fontSize: "14px", fontWeight: 500 }}
+            >
               Maximum Tokens
             </Text>
-            <Text size="sm" c="dimmed">
+            <Text style={{ color: "#F5F5F5", fontSize: "14px" }}>
               {maxTokens} tokens
             </Text>
           </Group>
@@ -82,17 +131,22 @@ export function GenerationControls({
               { value: 150, label: "150" },
               { value: 200, label: "200" },
             ]}
-            color="blue"
+            color="green" /* Using Green for accent */
+            styles={{
+              markLabel: { color: "#F5F5F5" },
+            }}
           />
         </div>
 
         {/* Temperature Slider */}
         <div>
-          <Group justify="space-between" mb={8}>
-            <Text size="sm" fw={500}>
+          <Group justify="space-between" mb="8px">
+            <Text
+              style={{ color: "#F5F5F5", fontSize: "14px", fontWeight: 500 }}
+            >
               Temperature
             </Text>
-            <Text size="sm" c="dimmed">
+            <Text style={{ color: "#F5F5F5", fontSize: "14px" }}>
               {temperature.toFixed(2)}
             </Text>
           </Group>
@@ -109,9 +163,19 @@ export function GenerationControls({
               { value: 1.5, label: "1.5" },
               { value: 2.0, label: "2.0" },
             ]}
-            color="grape"
+            color="red" /* Using Red for accent */
+            styles={{
+              markLabel: { color: "#F5F5F5" },
+            }}
           />
-          <Text size="xs" c="dimmed" mt={"xl"}>
+          <Text
+            style={{
+              fontSize: "12px",
+              color: "#F5F5F5",
+              marginTop: "24px",
+              lineHeight: 1.6,
+            }}
+          >
             Lower = more focused, Higher = more creative
           </Text>
         </div>

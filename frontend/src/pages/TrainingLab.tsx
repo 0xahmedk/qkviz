@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   Container,
-  Title,
   Text,
   Paper,
   Stack,
@@ -20,8 +19,7 @@ import {
   IconPlayerPause,
   IconRefresh,
   IconAlertCircle,
-  IconBrain,
-} from "@tabler/icons-react";
+} from "@tabler/icons-react"; // Removed IconBrain
 import "./TrainingLab.css";
 import { simulateTraining, type SimulateResponse } from "../services/api";
 import { VectorInspector } from "../components/VectorInspector";
@@ -43,6 +41,8 @@ interface InspectorState {
 }
 
 export function TrainingLab() {
+  const MAX_TRAINING_WORDS = 10;
+
   // Input controls
   const [text, setText] = useState(
     "The quick brown fox jumps over the lazy dog",
@@ -90,9 +90,21 @@ export function TrainingLab() {
     return () => clearInterval(interval);
   }, [isPlaying, trainingHistory, playbackSpeed]);
 
+  const getWordCount = (value: string) =>
+    value.trim().length === 0 ? 0 : value.trim().split(/\s+/).length;
+
   const handleStartTraining = async () => {
+    const wordCount = getWordCount(text);
+
     if (!text.trim()) {
-      setError("Please enter some text to train on");
+      setError("Please enter text for training."); // Changed informal language
+      return;
+    }
+
+    if (wordCount > MAX_TRAINING_WORDS) {
+      setError(
+        `The training corpus is limited to ${MAX_TRAINING_WORDS} words to ensure optimal visualization performance.`, // Changed informal language
+      );
       return;
     }
 
@@ -127,7 +139,6 @@ export function TrainingLab() {
     setIsPlaying(!isPlaying);
   };
 
-  // Helper function to tokenize text (matches backend word tokenizer)
   const currentSnapshot = trainingHistory?.history[currentFrame];
   const improvementPercent = trainingHistory
     ? (
@@ -138,31 +149,79 @@ export function TrainingLab() {
       ).toFixed(1)
     : "0";
 
-  return (
-    <Container size="xl" py="xl">
-      <Stack gap="lg">
-        {/* Header */}
-        <Paper shadow="sm" p="lg" radius="md" withBorder>
-          <Group justify="space-between" align="center">
-            <div>
-              <Title order={1} size="h2">
-                Training Lab
-              </Title>
-              <Text size="sm" c="dimmed" mt={4}>
-                Watch a model learn on your text in real-time
-              </Text>
-            </div>
-            <Badge
-              size="lg"
-              variant="gradient"
-              gradient={{ from: "grape", to: "pink" }}
-              leftSection={<IconBrain size={16} />}
-            >
-              Interactive Training
-            </Badge>
-          </Group>
-        </Paper>
+  const buttonStyles = {
+    root: {
+      borderRadius: 0,
+      border: "1px solid #333",
+      backgroundColor: "transparent",
+      color: "#F5F5F5",
+      "&:hover": {
+        backgroundColor: "#22C55E",
+        color: "#0A0A0A",
+      },
+      "&[data-disabled]": {
+        borderColor: "#555",
+        color: "#888",
+        backgroundColor: "transparent",
+        "&:hover": {
+          backgroundColor: "transparent",
+          color: "#888",
+        },
+      },
+    },
+    inner: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+    leftSection: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+  };
 
+  const playButtonStyles = {
+    root: {
+      ...buttonStyles.root,
+      borderColor: "#22C55E",
+      "&:hover": {
+        backgroundColor: "#22C55E",
+        color: "#0A0A0A",
+      },
+    },
+    inner: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+    leftSection: {
+      color: "#F5F5F5",
+      "&:hover": {
+        color: "#0A0A0A",
+      },
+    },
+  };
+
+  const speedButtonStyles = (active: boolean) => ({
+    root: {
+      borderRadius: 0,
+      border: `1px solid ${active ? "#22C55E" : "#333"}`,
+      backgroundColor: active ? "#22C55E" : "transparent",
+      color: active ? "#0A0A0A" : "#F5F5F5",
+      "&:hover": {
+        backgroundColor: active ? "#22C55E" : "#1A1A1A",
+        color: active ? "#0A0A0A" : "#F5F5F5",
+      },
+    },
+  });
+
+  return (
+    <Container size="xl" py="0">
+      <Stack gap="32px">
         {/* Error Alert */}
         {error && (
           <Alert
@@ -171,45 +230,91 @@ export function TrainingLab() {
             color="red"
             withCloseButton
             onClose={() => setError("")}
+            style={{ borderRadius: 0 }}
           >
             {error}
           </Alert>
         )}
 
-        <Grid gutter="lg">
+        <Grid gutter="32px">
           {/* Left Panel - Controls */}
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Paper p="md" radius="md" withBorder>
-              <Stack gap="md">
-                <Text size="lg" fw={600}>
+            <Paper
+              p="24px"
+              radius={0}
+              withBorder
+              style={{ borderColor: "#333", backgroundColor: "#1A1A1A" }}
+            >
+              <Stack gap="24px">
+                <Text
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 800,
+                    color: "#F5F5F5",
+                    lineHeight: 1.6,
+                  }}
+                >
                   Training Controls
                 </Text>
 
                 {/* Text Input */}
                 <div>
-                  <Text size="sm" fw={500} mb={8}>
+                  <Text
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      marginBottom: "8px",
+                      color: "#F5F5F5",
+                      lineHeight: 1.6,
+                    }}
+                  >
                     Training Corpus
                   </Text>
                   <Textarea
                     placeholder="Enter text to train on..."
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={(e) => {
+                      setText(e.target.value);
+                    }}
                     minRows={4}
                     maxRows={8}
                     disabled={isTraining || !!trainingHistory}
+                    styles={{
+                      input: {
+                        backgroundColor: "#0A0A0A",
+                        color: "#F5F5F5",
+                        borderColor: "#333",
+                        borderRadius: 0,
+                      },
+                    }}
                   />
-                  <Text size="xs" c="dimmed" mt={4}>
-                    The model will learn to predict this text
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "#F5F5F5",
+                      marginTop: "8px",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    The model will learn to predict this text. Maximum{" "}
+                    {MAX_TRAINING_WORDS} words.
                   </Text>
                 </div>
 
                 {/* Epochs Slider */}
                 <div>
-                  <Group justify="space-between" mb={8}>
-                    <Text size="sm" fw={500}>
+                  <Group justify="space-between" mb="8px">
+                    <Text
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "#F5F5F5",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       Epochs
                     </Text>
-                    <Text size="sm" c="dimmed">
+                    <Text style={{ fontSize: "14px", color: "#F5F5F5" }}>
                       {epochs}
                     </Text>
                   </Group>
@@ -225,21 +330,38 @@ export function TrainingLab() {
                       { value: 25, label: "25" },
                       { value: 50, label: "50" },
                     ]}
-                    color="grape"
+                    color="green" // Using Green for accent
                     disabled={isTraining || !!trainingHistory}
+                    styles={{
+                      markLabel: { color: "#F5F5F5" },
+                    }}
                   />
-                  <Text size="xs" c="dimmed" mt={4}>
-                    Number of training iterations
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "#F5F5F5",
+                      marginTop: "25px",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Number of training iterations.
                   </Text>
                 </div>
 
                 {/* Learning Rate Slider */}
                 <div>
-                  <Group justify="space-between" mb={8}>
-                    <Text size="sm" fw={500}>
+                  <Group justify="space-between" mb="8px">
+                    <Text
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 500,
+                        color: "#F5F5F5",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       Learning Rate
                     </Text>
-                    <Text size="sm" c="dimmed">
+                    <Text style={{ fontSize: "14px", color: "#F5F5F5" }}>
                       {learningRate.toFixed(3)}
                     </Text>
                   </Group>
@@ -255,73 +377,106 @@ export function TrainingLab() {
                       { value: 0.05, label: "0.05" },
                       { value: 0.1, label: "0.1" },
                     ]}
-                    color="grape"
+                    color="green" // Using Green for accent
                     disabled={isTraining || !!trainingHistory}
+                    styles={{
+                      markLabel: { color: "#F5F5F5" },
+                    }}
                   />
-                  <Text size="xs" c="dimmed" mt={4}>
-                    How fast the model learns
+                  <Text
+                    style={{
+                      fontSize: "12px",
+                      color: "#F5F5F5",
+                      marginTop: "25px",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Rate at which the model adjusts its internal parameters.
                   </Text>
                 </div>
 
                 {/* Action Buttons */}
-                <Group justify="center" mt="md">
+                <Group justify="center" mt="24px">
                   {!trainingHistory ? (
                     <Button
                       size="lg"
                       leftSection={
-                        isTraining ? (
-                          <Loader size="xs" color="white" />
-                        ) : (
-                          <IconBrain size={20} />
-                        )
-                      }
+                        isTraining ? <Loader size="xs" color="#F5F5F5" /> : null
+                      } // Removed IconBrain
                       onClick={handleStartTraining}
                       disabled={isTraining}
-                      variant="gradient"
-                      gradient={{ from: "grape", to: "pink" }}
+                      styles={playButtonStyles}
                       fullWidth
                     >
-                      {isTraining ? "Training..." : "Start Training"}
+                      {isTraining
+                        ? "Training in Progress..."
+                        : "Start Training"}
                     </Button>
                   ) : (
                     <Button
                       size="lg"
                       leftSection={<IconRefresh size={20} />}
                       onClick={handleReset}
-                      variant="light"
-                      color="gray"
+                      styles={buttonStyles}
                       fullWidth
                     >
-                      Reset & Train New
+                      Reset & New Training
                     </Button>
                   )}
                 </Group>
 
                 {/* Training Stats */}
                 {trainingHistory && (
-                  <Paper p="sm" withBorder bg="dark.6">
-                    <Stack gap="xs">
+                  <Paper
+                    p="16px"
+                    withBorder
+                    style={{
+                      borderColor: "#333",
+                      backgroundColor: "#0A0A0A",
+                      borderRadius: 0,
+                    }}
+                  >
+                    <Stack gap="8px">
                       <Group justify="space-between">
-                        <Text size="sm" c="dimmed">
+                        <Text style={{ fontSize: "14px", color: "#F5F5F5" }}>
                           Vocabulary Size:
                         </Text>
-                        <Text size="sm" fw={500}>
+                        <Text
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 500,
+                            color: "#F5F5F5",
+                          }}
+                        >
                           {trainingHistory.vocab_size}
                         </Text>
                       </Group>
                       <Group justify="space-between">
-                        <Text size="sm" c="dimmed">
+                        <Text style={{ fontSize: "14px", color: "#F5F5F5" }}>
                           Total Epochs:
                         </Text>
-                        <Text size="sm" fw={500}>
+                        <Text
+                          style={{
+                            fontSize: "14px",
+                            fontWeight: 500,
+                            color: "#F5F5F5",
+                          }}
+                        >
                           {trainingHistory.history.length}
                         </Text>
                       </Group>
                       <Group justify="space-between">
-                        <Text size="sm" c="dimmed">
+                        <Text style={{ fontSize: "14px", color: "#F5F5F5" }}>
                           Improvement:
                         </Text>
-                        <Badge color="green" variant="light">
+                        <Badge
+                          style={{
+                            borderRadius: 0,
+                            backgroundColor: "#22C55E",
+                            color: "#0A0A0A",
+                            border: "1px solid #22C55E",
+                          }}
+                        >
                           {improvementPercent}%
                         </Badge>
                       </Group>
@@ -335,15 +490,35 @@ export function TrainingLab() {
           {/* Right Panel - DVR Player */}
           <Grid.Col span={{ base: 12, md: 8 }}>
             {trainingHistory ? (
-              <Stack gap="md">
+              <Stack gap="32px">
                 {/* Playback Controls */}
-                <Paper p="md" radius="md" withBorder>
-                  <Stack gap="md">
+                <Paper
+                  p="24px"
+                  radius={0}
+                  withBorder
+                  style={{ borderColor: "#333", backgroundColor: "#1A1A1A" }}
+                >
+                  <Stack gap="24px">
                     <Group justify="space-between">
-                      <Text size="lg" fw={600}>
+                      <Text
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: 800,
+                          color: "#F5F5F5",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Training Playback
                       </Text>
-                      <Badge variant="light" size="lg">
+                      <Badge
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: "#333",
+                          color: "#F5F5F5",
+                          border: "1px solid #555",
+                        }}
+                        size="lg"
+                      >
                         Epoch {currentSnapshot?.epoch || 0}
                       </Badge>
                     </Group>
@@ -359,13 +534,16 @@ export function TrainingLab() {
                         min={0}
                         max={trainingHistory.history.length - 1}
                         step={1}
-                        color="grape"
+                        color="green" // Using Green for accent
                         label={(val) => `Epoch ${val}`}
+                        styles={{
+                          markLabel: { color: "#F5F5F5" },
+                        }}
                       />
                     </div>
 
                     {/* Play Controls */}
-                    <Group justify="center" gap="md">
+                    <Group justify="center" gap="16px">
                       <Button
                         leftSection={
                           isPlaying ? (
@@ -375,45 +553,46 @@ export function TrainingLab() {
                           )
                         }
                         onClick={handlePlayPause}
-                        variant="filled"
-                        color="grape"
+                        styles={playButtonStyles}
                       >
                         {isPlaying ? "Pause" : "Play"}
                       </Button>
 
                       <Button
                         onClick={() => setCurrentFrame(0)}
-                        variant="light"
-                        color="gray"
+                        styles={buttonStyles}
                       >
                         Reset to Start
                       </Button>
 
                       {/* Playback Speed */}
-                      <Group gap="xs">
-                        <Text size="sm" c="dimmed">
+                      <Group gap="8px">
+                        <Text
+                          style={{
+                            fontSize: "14px",
+                            color: "#F5F5F5",
+                            lineHeight: 1.6,
+                          }}
+                        >
                           Speed:
                         </Text>
                         <Button
                           size="xs"
-                          variant={playbackSpeed === 0.5 ? "filled" : "light"}
-                          color="gray"
+                          styles={speedButtonStyles(playbackSpeed === 0.5)}
                           onClick={() => setPlaybackSpeed(0.5)}
                         >
                           0.5x
                         </Button>
                         <Button
                           size="xs"
-                          variant={playbackSpeed === 1.0 ? "filled" : "light"}
-                          color="gray"
+                          styles={speedButtonStyles(playbackSpeed === 1.0)}
                           onClick={() => setPlaybackSpeed(1.0)}
                         >
                           1x
                         </Button>
                         <Button
                           size="xs"
-                          variant={playbackSpeed === 2.0 ? "filled" : "light"}
-                          color="gray"
+                          styles={speedButtonStyles(playbackSpeed === 2.0)}
                           onClick={() => setPlaybackSpeed(2.0)}
                         >
                           2x
@@ -424,21 +603,57 @@ export function TrainingLab() {
                 </Paper>
 
                 {/* Loss Display */}
-                <Paper p="md" radius="md" withBorder>
+                <Paper
+                  p="24px"
+                  radius={0}
+                  withBorder
+                  style={{ borderColor: "#333", backgroundColor: "#1A1A1A" }}
+                >
                   <Group justify="space-between" align="center">
                     <div>
-                      <Text size="sm" c="dimmed" mb={4}>
+                      <Text
+                        style={{
+                          fontSize: "14px",
+                          color: "#F5F5F5",
+                          marginBottom: "8px",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Training Loss
                       </Text>
-                      <Text size="32px" fw={700} c="grape">
+                      <Text
+                        style={{
+                          fontSize: "32px",
+                          fontWeight: 700,
+                          color:
+                            (currentSnapshot?.loss || 0) <
+                            (trainingHistory?.history[0].loss || 0)
+                              ? "#22C55E"
+                              : "#EF4444", // Green for decreasing loss, Red for increasing
+                        }}
+                      >
                         {currentSnapshot?.loss.toFixed(4) || "N/A"}
                       </Text>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <Text size="sm" c="dimmed" mb={4}>
+                      <Text
+                        style={{
+                          fontSize: "14px",
+                          color: "#F5F5F5",
+                          marginBottom: "8px",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Progress
                       </Text>
-                      <Text size="lg" fw={600}>
+                      <Text
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: 600,
+                          color: "#F5F5F5",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         {(
                           ((currentFrame + 1) /
                             trainingHistory.history.length) *
@@ -451,40 +666,99 @@ export function TrainingLab() {
                 </Paper>
 
                 {/* Prediction Comparison */}
-                <Paper p="md" radius="md" withBorder>
-                  <Stack gap="md">
-                    <Text size="lg" fw={600}>
+                <Paper
+                  p="24px"
+                  radius={0}
+                  withBorder
+                  style={{ borderColor: "#333", backgroundColor: "#1A1A1A" }}
+                >
+                  <Stack gap="16px">
+                    <Text
+                      style={{
+                        fontSize: "20px",
+                        fontWeight: 800,
+                        color: "#F5F5F5",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       Prediction Comparison
                     </Text>
 
                     <div>
-                      <Text size="sm" fw={500} mb={8}>
+                      <Text
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          marginBottom: "8px",
+                          color: "#F5F5F5",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Input Sequence:
                       </Text>
-                      <Code block style={{ fontSize: "14px", padding: "12px" }}>
+                      <Code
+                        block
+                        style={{
+                          fontSize: "14px",
+                          padding: "16px",
+                          backgroundColor: "#0A0A0A",
+                          color: "#F5F5F5",
+                          borderColor: "#333",
+                          borderRadius: 0,
+                        }}
+                      >
                         {currentSnapshot?.input_tokens?.join("") || ""}
                       </Code>
                     </div>
 
                     <div>
-                      <Text size="sm" fw={500} mb={8}>
+                      <Text
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          marginBottom: "8px",
+                          color: "#F5F5F5",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Target (Correct):
                       </Text>
-                      <Code block style={{ fontSize: "14px", padding: "12px" }}>
+                      <Code
+                        block
+                        style={{
+                          fontSize: "14px",
+                          padding: "16px",
+                          backgroundColor: "#0A0A0A",
+                          color: "#F5F5F5",
+                          borderColor: "#333",
+                          borderRadius: 0,
+                        }}
+                      >
                         {currentSnapshot?.target_tokens?.join("") || ""}
                       </Code>
                     </div>
 
                     <div>
-                      <Text size="sm" fw={500} mb={8}>
+                      <Text
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          marginBottom: "8px",
+                          color: "#F5F5F5",
+                          lineHeight: 1.6,
+                        }}
+                      >
                         Model Prediction:
                       </Text>
                       <Code
                         block
                         style={{
                           fontSize: "14px",
-                          padding: "12px",
-                          backgroundColor: "rgba(134, 46, 156, 0.1)",
+                          padding: "16px",
+                          backgroundColor: "#0A0A0A",
+                          color: "#F5F5F5",
+                          borderColor: "#333",
+                          borderRadius: 0,
                         }}
                       >
                         {currentSnapshot?.predicted_text || ""}
@@ -494,62 +768,129 @@ export function TrainingLab() {
                 </Paper>
 
                 {/* Attention Map */}
-                <Paper p="md" radius="md" withBorder>
-                  <Stack gap="md">
-                    <Text size="lg" fw={600}>
+                <Paper
+                  p="24px"
+                  radius={0}
+                  withBorder
+                  style={{ borderColor: "#333", backgroundColor: "#1A1A1A" }}
+                >
+                  <Stack gap="16px">
+                    <Text
+                      style={{
+                        fontSize: "20px",
+                        fontWeight: 800,
+                        color: "#F5F5F5",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       Attention Weights
                     </Text>
 
                     {/* Hover Info Box - Fixed height to prevent layout shift */}
                     <Paper
-                      p="sm"
+                      p="16px"
                       withBorder
-                      bg={hoveredCell ? "grape.9" : "dark.6"}
                       style={{
                         minHeight: "100px",
                         transition: "background-color 0.2s ease",
+                        borderColor: "#333",
+                        backgroundColor: "#0A0A0A",
+                        borderRadius: 0,
                       }}
                     >
                       {hoveredCell ? (
-                        <Stack gap="xs">
-                          <Text size="sm" fw={600} c="grape.1">
-                            📍 Attention Details
+                        <Stack gap="8px">
+                          <Text
+                            style={{
+                              fontSize: "14px",
+                              fontWeight: 600,
+                              color: "#F5F5F5",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            Attention Details:
                           </Text>
-                          <Text size="sm" c="gray.3">
+                          <Text
+                            style={{
+                              fontSize: "14px",
+                              color: "#F5F5F5",
+                              lineHeight: 1.6,
+                            }}
+                          >
                             When predicting{" "}
-                            <Text span fw={700} c="pink.3">
+                            <Text
+                              span
+                              style={{ fontWeight: 700, color: "#22C55E" }}
+                            >
                               '{hoveredCell.targetToken}'
                             </Text>
                             , the model pays{" "}
-                            <Text span fw={700} c="grape.3">
+                            <Text
+                              span
+                              style={{ fontWeight: 700, color: "#22C55E" }}
+                            >
                               {(hoveredCell.value * 100).toFixed(1)}%
                             </Text>{" "}
                             attention to{" "}
-                            <Text span fw={700} c="cyan.3">
+                            <Text
+                              span
+                              style={{ fontWeight: 700, color: "#22C55E" }}
+                            >
                               '{hoveredCell.sourceToken}'
                             </Text>
                           </Text>
-                          <Group gap="xs">
-                            <Badge size="xs" variant="light" color="pink">
+                          <Group gap="8px">
+                            <Badge
+                              size="xs"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: "#333",
+                                color: "#F5F5F5",
+                                border: "1px solid #555",
+                              }}
+                            >
                               Target: {hoveredCell.targetToken}
                             </Badge>
-                            <Badge size="xs" variant="light" color="cyan">
+                            <Badge
+                              size="xs"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: "#333",
+                                color: "#F5F5F5",
+                                border: "1px solid #555",
+                              }}
+                            >
                               Source: {hoveredCell.sourceToken}
                             </Badge>
-                            <Badge size="xs" variant="light" color="grape">
+                            <Badge
+                              size="xs"
+                              style={{
+                                borderRadius: 0,
+                                backgroundColor: "#333",
+                                color: "#F5F5F5",
+                                border: "1px solid #555",
+                              }}
+                            >
                               Weight: {(hoveredCell.value * 100).toFixed(1)}%
                             </Badge>
                           </Group>
                         </Stack>
                       ) : (
                         <Stack
-                          gap="xs"
+                          gap="8px"
                           align="center"
                           justify="center"
                           style={{ height: "100%" }}
                         >
-                          <Text size="sm" c="dimmed" fs="italic">
-                            Hover over a cell to see attention details
+                          <Text
+                            style={{
+                              fontSize: "14px",
+                              color: "#F5F5F5",
+                              fontStyle: "italic",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            Hover over a cell to see attention details.
                           </Text>
                         </Stack>
                       )}
@@ -560,7 +901,6 @@ export function TrainingLab() {
                       <div className="attention-heatmap">
                         {currentSnapshot.attention_weights.map(
                           (row: number[], i: number) => {
-                            // Use tokens directly from backend (already tokenized correctly)
                             const tokens = currentSnapshot.input_tokens;
 
                             return (
@@ -568,19 +908,22 @@ export function TrainingLab() {
                                 {row.map((weight: number, j: number) => {
                                   const targetToken = tokens[i] || `Token${i}`;
                                   const sourceToken = tokens[j] || `Token${j}`;
-                                  const isZero = weight < 0.001; // Masked/future tokens
+                                  const isZero = weight < 0.001;
+
+                                  const cellColor = isZero
+                                    ? "rgba(0, 0, 0, 0.3)"
+                                    : `rgba(34, 197, 94, ${weight})`; // Green for attention
 
                                   return (
                                     <div
                                       key={j}
                                       className="attention-cell"
                                       style={{
-                                        backgroundColor: isZero
-                                          ? "rgba(0, 0, 0, 0.3)"
-                                          : `rgba(134, 46, 156, ${weight})`,
+                                        backgroundColor: cellColor,
                                         cursor: isZero
                                           ? "not-allowed"
                                           : "pointer",
+                                        border: "1px solid #333",
                                       }}
                                       onMouseEnter={() => {
                                         if (!isZero) {
@@ -614,8 +957,15 @@ export function TrainingLab() {
                         )}
                       </div>
                     ) : (
-                      <Text size="sm" c="dimmed" fs="italic">
-                        Attention weights will appear here during training
+                      <Text
+                        style={{
+                          fontSize: "14px",
+                          color: "#F5F5F5",
+                          fontStyle: "italic",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        Attention weights will appear here during training.
                       </Text>
                     )}
                   </Stack>
@@ -623,21 +973,31 @@ export function TrainingLab() {
               </Stack>
             ) : (
               <Paper
-                p="xl"
-                radius="md"
+                p="32px"
+                radius={0}
                 withBorder
                 style={{
                   minHeight: "500px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  borderColor: "#333",
+                  backgroundColor: "#1A1A1A",
                 }}
               >
-                <Stack align="center" gap="md">
-                  <IconBrain size={64} color="gray" />
-                  <Text size="lg" c="dimmed" ta="center">
+                <Stack align="center" gap="16px">
+                  {/* <IconBrain size={64} color="gray" /> */}{" "}
+                  {/* Removed IconBrain */}
+                  <Text
+                    style={{
+                      fontSize: "18px",
+                      color: "#F5F5F5",
+                      textAlign: "center",
+                      lineHeight: 1.6,
+                    }}
+                  >
                     Configure your training parameters and click "Start
-                    Training" to begin
+                    Training" to begin.
                   </Text>
                 </Stack>
               </Paper>

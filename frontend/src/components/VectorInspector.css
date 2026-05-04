@@ -1,16 +1,19 @@
 /* VectorInspector Component Styles */
 
+/* VectorInspector Component Styles */
+
 .vector-bars {
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
   height: 200px;
   width: 100%;
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  gap: 1px;
+  padding: 8px; /* Standardize padding */
+  background-color: #0a0a0a; /* Deep Black */
+  border-radius: 0; /* Sharp corners */
+  gap: 1px; /* Keep small gap for visual clarity */
   position: relative;
+  border: 1px solid #333; /* Solid border */
 }
 
 .vector-bar-container {
@@ -27,27 +30,28 @@
 .vector-bar {
   width: 100%;
   min-height: 2px;
-  border-radius: 2px 2px 0 0;
-  transition: all 0.2s ease;
+  border-radius: 0; /* Sharp corners */
+  transition: background-color 0.2s ease; /* Smooth transition for hover */
   cursor: pointer;
 }
 
 .vector-bar:hover {
   opacity: 1 !important;
-  transform: scaleX(1.2);
+  transform: none; /* Remove scale transform */
   z-index: 10;
 }
 
+/* Remove box-shadows from aligned and opposite bars, colors are handled inline now */
 .vector-bar-aligned {
-  box-shadow: 0 0 8px rgba(64, 192, 87, 0.6);
+  /* box-shadow: none; */
 }
 
 .vector-bar-opposite {
-  box-shadow: 0 0 8px rgba(250, 82, 82, 0.6);
+  /* box-shadow: none; */
 }
 
 .vector-bar-neutral {
-  opacity: 0.7;
+  /* opacity is handled inline now */
 }
 
 /* Responsive adjustments */
