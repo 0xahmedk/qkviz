@@ -5,8 +5,8 @@ Trains on muqaddimah.txt and saves the model weights.
 
 import torch
 from pathlib import Path
-from model import GPTLanguageModel
-from data import load_data, get_batch, save_tokenizer
+from app.model import GPTLanguageModel
+from app.data import load_data, get_batch, save_tokenizer
 
 
 # Hyperparameters

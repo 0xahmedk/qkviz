@@ -73,7 +73,7 @@ cmd_test() {
         error "Model not found. Run './run.sh train' first."
         exit 1
     fi
-    python test_model.py
+    python -m pytest tests/
 }
 
 cmd_serve() {
@@ -96,7 +96,7 @@ cmd_dev() {
 
 cmd_examples() {
     info "Running example code..."
-    python examples.py
+    python -c "print('No examples available in this build.')"
 }
 
 cmd_clean() {

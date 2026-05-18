@@ -11,9 +11,9 @@ import torch
 import torch.nn.functional as F
 from typing import List, Dict, Optional
 
-from model import GPTLanguageModel
-from data import load_tokenizer
-from trainer_dvr import simulate_training_run
+from app.model import GPTLanguageModel
+from app.data import load_tokenizer
+from app.trainer_dvr import simulate_training_run
 
 
 # Initialize FastAPI app

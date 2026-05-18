@@ -5,8 +5,8 @@ Records internal training states and attention patterns for visualization.
 
 import torch
 import torch.nn.functional as F
-from model import GPTLanguageModel
-from data import WordTokenizer
+from app.model import GPTLanguageModel
+from app.data import WordTokenizer
 import re
 
 
