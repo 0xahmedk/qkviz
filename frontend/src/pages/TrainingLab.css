@@ -1,18 +1,73 @@
 .attention-heatmap {
   display: flex;
   flex-direction: column;
-  gap: 2px; /* Keep small gap for visual separation */
-  background-color: #0a0a0a; /* Deep Black */
-  padding: 8px; /* Standardize padding */
-  border-radius: 0; /* Sharp corners */
+  gap: 2px;
+  background-color: #0a0a0a;
+  padding: 8px;
+  border-radius: 0;
   overflow: auto;
-  max-width: 100%; /* Ensure full width */
-  border: 1px solid #333; /* Solid border */
+  max-width: 100%;
+  border: 1px solid #333;
+}
+
+.attention-col-header {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  margin-bottom: 2px;
+}
+
+.attention-corner {
+  width: 70px;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.attention-col-label {
+  width: 24px;
+  min-width: 24px;
+  height: 68px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.attention-col-label span {
+  font-size: 10px;
+  color: #888;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  line-height: 1;
+  max-height: 68px;
+  overflow: hidden;
+}
+
+.attention-data-row {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.attention-row-label {
+  width: 70px;
+  min-width: 70px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
+  font-size: 10px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .attention-row {
   display: flex;
-  gap: 2px; /* Keep small gap for visual separation */
+  gap: 2px;
 }
 
 .attention-cell {

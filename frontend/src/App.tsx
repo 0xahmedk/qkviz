@@ -8,6 +8,7 @@ import {
   Grid,
   Alert,
   Tabs,
+  Box,
 } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
 import "./App.css";
@@ -26,6 +27,9 @@ import { TrainingLab } from "./pages/TrainingLab";
 
 // API Service
 import { checkHealth, generateNextToken } from "./services/api";
+import { ViewCounter } from "./components/ViewCounter";
+import ViewAnalytics from "./components/ViewAnalytics";
+import { TermTooltip } from "./components/TermTooltip";
 
 interface Token {
   text: string;
@@ -158,6 +162,25 @@ function App() {
 
   // 4. Effect hooks
 
+  // Inject MapMyVisitors tracking script on mount so all visitors are tracked,
+  // not just those who open the analytics modal.
+  useEffect(() => {
+    if (document.getElementById("mapmyvisitors")) return;
+    const container = document.createElement("div");
+    container.style.cssText =
+      "position:absolute;width:0;height:0;overflow:hidden;visibility:hidden";
+    document.body.appendChild(container);
+    const script = document.createElement("script");
+    script.id = "mapmyvisitors";
+    script.type = "text/javascript";
+    script.src =
+      "https://mapmyvisitors.com/map.js?cl=ffffff&w=a&t=n&d=asWChGCPZ9mTGNvJn10ctJ665yYB0i3hc-Vf_-TwD0E";
+    container.appendChild(script);
+    return () => {
+      document.body.removeChild(container);
+    };
+  }, []);
+
   // Effect for checking backend health on mount
   useEffect(() => {
     (async () => {
@@ -252,7 +275,7 @@ function App() {
                 textAlign: "center",
               }}
             >
-              Inside the thinking of Stochastic Parrots
+              Inside the "thinking" of "Stochastic Parrots"
             </Title>
             <div style={{ marginTop: "25px" }}>
               <a
@@ -282,6 +305,57 @@ function App() {
             </div>
           </div>
         </Paper>
+
+        {/* Intro paragraph */}
+        <div
+          style={{
+            maxWidth: "720px",
+            margin: "0 auto",
+            textAlign: "center",
+            padding: "8px 0 4px",
+          }}
+        >
+          <Text
+            style={{
+              fontSize: "18px",
+              color: "#C0C0C0",
+              lineHeight: 1.8,
+              marginBottom: "28px",
+            }}
+          >
+            The word{" "}
+            <TermTooltip
+              definition="Mahowald et al (2024) separates what LLMs are genuinely good at from what they are not, without overclaiming either way."
+              href="https://arxiv.org/abs/2404.03502"
+            >
+              thinking
+            </TermTooltip>{" "}
+            in the title is deliberate and uncomfortable.{" "}
+            <TermTooltip
+              definition="Bender et al (2021) argues that large language models are statistical pattern matchers, not thinkers."
+              href="https://dl.acm.org/doi/10.1145/3442188.3445922"
+            >
+              Stochastic parrots
+            </TermTooltip>{" "}
+            is a term coined to argue that language models do not think at all,
+            that they are sophisticated next-token predictors and nothing more.
+            Whether that is a category error or an open question depends on who
+            you ask, and this simulation does not take a side. It shows you the
+            mechanism directly: train a small model on a short text, watch it
+            predict one token at a time, and read every probability score behind
+            each decision.
+          </Text>
+          <Text
+            style={{
+              fontSize: "14px",
+              color: "#555",
+              fontStyle: "italic",
+              textAlign: "center",
+            }}
+          >
+            scroll down to begin
+          </Text>
+        </div>
 
         {/* Error Alert */}
         {errorMessage && (
@@ -355,24 +429,29 @@ function App() {
               }}
             >
               <Stack gap="16px">
-                <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                  {" "}
-                  {/* Added margin: 0 auto for centering */}
+                <div
+                  style={{
+                    maxWidth: "800px",
+                    margin: "0 auto",
+                    textAlign: "center",
+                  }}
+                >
                   <Text
                     style={{
-                      fontSize: "18px", // Slightly bigger for that blog feel
+                      fontSize: "18px",
                       color: "#F5F5F5",
                       lineHeight: 1.7,
                       marginBottom: "20px",
                     }}
                   >
-                    This is an exploration of{" "}
-                    <strong>Autoregressive Prediction</strong> the process of
-                    predicting the future by looking at the past. Imagine a
-                    model that doesn't "know" what it wants to say; instead, it
-                    looks at the words you just typed and calculates a giant
-                    list of probabilities for what the very next piece of text
-                    should be.
+                    <TermTooltip definition="Predicting one token at a time using only the tokens that came before it. No lookahead, no plan">
+                      Autoregressive prediction
+                    </TermTooltip>{" "}
+                    is a simple idea with a strange outcome. The model has no
+                    plan, no intention, no target sentence it is working toward.
+                    It looks at the tokens before it and produces a probability
+                    score for every possible next token. Then it picks one and
+                    does it again.
                   </Text>
                   <Text
                     style={{
@@ -382,12 +461,63 @@ function App() {
                       marginBottom: "20px",
                     }}
                   >
-                    By visualizing the <strong>Logits</strong> (the raw scores)
-                    and percentages, you can see the internal struggle of the
-                    transformer as it navigates the 14th-century philosophy of{" "}
-                    <em>Al-Muqaddimah</em>. It constructs meaning one tiny token
-                    at a time, always chasing the most likely path found in the
-                    original text.
+                    The{" "}
+                    <TermTooltip definition="Raw unnormalized scores the model assigns to every token in its vocabulary before they get converted to probabilities">
+                      logits
+                    </TermTooltip>{" "}
+                    you see here are those raw scores before they get converted
+                    to percentages. They reveal what the model considered and
+                    what it almost said. The model behind this is a small
+                    GPT-styled transformer, minimal layers, minimal parameters,
+                    trained specifically on <em>Al-Muqaddimah</em>, Ibn
+                    Khaldun's 14th-century treatise on history and civilization.
+                    We captured its weights and logits after training so you can
+                    watch exactly how it distributes probability across its
+                    vocabulary. The output it produces will often be incoherent.
+                    That is not a bug to work around. A model this small,
+                    trained on a corpus this narrow, was never going to write
+                    sense. But that is beside the point. What you are looking at
+                    is the mechanism, not the result.
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: "18px",
+                      color: "#F5F5F5",
+                      lineHeight: 1.7,
+                      marginBottom: "20px",
+                    }}
+                  >
+                    Two controls shape what you see.{" "}
+                    <TermTooltip definition="A hard cap on how many tokens the model generates before it stops, regardless of whether the output feels complete">
+                      Max tokens
+                    </TermTooltip>{" "}
+                    sets a hard limit on how many predictions the model makes
+                    before it stops.{" "}
+                    <TermTooltip definition="A value that controls how peaked or flat the probability distribution is. Low means predictable, high means varied">
+                      Temperature
+                    </TermTooltip>{" "}
+                    controls how the model chooses between its options. At low
+                    temperature, it almost always picks the highest scoring
+                    token, staying close to what the training text would
+                    predict. Turn it up and the lower ranked options get a real
+                    chance, which produces more varied and sometimes surprising
+                    output. High temperature is not the model being creative. It
+                    is the model being less certain on purpose.
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: "18px",
+                      color: "#F5F5F5",
+                      lineHeight: 1.7,
+                      marginBottom: "20px",
+                    }}
+                  >
+                    You can run the full sequence at once or step through it
+                    token by token. Stepping through is worth doing at least
+                    once. It makes visible something that is easy to miss when
+                    generation happens in a blur: there is no sentence being
+                    assembled. There is only the next token, then the next, each
+                    one decided without any knowledge of where it is going.
                   </Text>
                   <a
                     href="https://ia903106.us.archive.org/22/items/etaoin/The%20Muqaddimah%20–%20An%20Introduction%20to%20History%20by%20Ibn%20Khaldun.pdf"
@@ -455,9 +585,13 @@ function App() {
               }}
             >
               <Stack gap="16px">
-                <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-                  {" "}
-                  {/* Added margin: 0 auto for centering */}
+                <div
+                  style={{
+                    maxWidth: "800px",
+                    margin: "0 auto",
+                    textAlign: "center",
+                  }}
+                >
                   <Text
                     style={{
                       fontSize: "18px",
@@ -466,12 +600,21 @@ function App() {
                       marginBottom: "20px",
                     }}
                   >
-                    Training is the art of <strong>minimizing regret</strong>.
-                    When the model guesses the wrong next word, it calculates
-                    how far off it was. <strong>Backpropagation </strong>
-                    then sends a signal backward through the layers, adjusting
-                    the numerical connections or weights, to ensure it doesn't
-                    make the same mistake twice.
+                    Training is fundamentally about{" "}
+                    <TermTooltip definition="Each wrong prediction generates an error signal that gets used to adjust the model before the next attempt">
+                      correcting mistakes
+                    </TermTooltip>
+                    . Each time the model predicts the wrong next word, it
+                    measures how wrong it was.{" "}
+                    <TermTooltip definition="The process of tracing an error backward through the network to find which weights caused it and by how much">
+                      Backpropagation
+                    </TermTooltip>{" "}
+                    then works backward through every layer, nudging the{" "}
+                    <TermTooltip definition="Numbers that control how strongly one neuron influences another. Training adjusts these continuously">
+                      weights
+                    </TermTooltip>
+                    , the numerical connections between neurons, so the same
+                    error is less likely to happen again.
                   </Text>
                   <Text
                     style={{
@@ -481,13 +624,44 @@ function App() {
                       marginBottom: "20px",
                     }}
                   >
-                    Think of it as <strong>carving linguistic patterns</strong>{" "}
-                    into a block of raw digital stone. Over thousands of
-                    iterations, the weights stop being random and begin to
-                    reflect the specific statistical structure and vocabulary of
-                    the
-                    <strong> corpus you provide</strong>. You are essentially
-                    watching the machine memorize the "DNA" of your text.
+                    Do this enough times across enough text, and something
+                    shifts. The weights stop being noise and start carrying
+                    structure, the rhythms, vocabulary, and patterns specific to
+                    your{" "}
+                    <TermTooltip definition="The body of text the model learns from. It never sees anything outside of this during training">
+                      training corpus
+                    </TermTooltip>
+                    . The following model isn't learning language in any general
+                    sense. It's learning yours.
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: "18px",
+                      color: "#F5F5F5",
+                      lineHeight: 1.7,
+                      marginBottom: "20px",
+                    }}
+                  >
+                    Below, you provide a short sentence, set the number of
+                    epochs, and choose a learning rate. The backend runs the
+                    full training loop and records a snapshot at every step. You
+                    can scrub through those snapshots on a timeline or let them
+                    play back at variable speed. Each frame shows the{" "}
+                    <TermTooltip definition="A single number measuring how wrong the model's predictions were. Lower is better. Watching it fall across epochs is watching the model learn.">
+                      loss
+                    </TermTooltip>{" "}
+                    at that epoch alongside three things: the input the model
+                    received, the correct next token, and what the model
+                    actually predicted. Below that is the{" "}
+                    <TermTooltip definition="A grid showing how much each token attends to every other token. Brighter cells mean stronger attention between that pair.">
+                      attention heatmap
+                    </TermTooltip>
+                    , a grid where each cell represents how much attention one
+                    token pays to another, with opacity reflecting the weight.
+                    Hover any cell to see the exact percentage. Click one to
+                    open the <strong>Vector Inspector</strong>, which shows the
+                    raw query and key vectors that produced that attention
+                    score.
                   </Text>
                 </div>
               </Stack>
@@ -495,6 +669,60 @@ function App() {
             <TrainingLab />
           </Tabs.Panel>
         </Tabs>
+      </Stack>
+
+      <Stack
+        w="100%"
+        gap={4}
+        mt={28}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Box style={{ textAlign: "center" }}>
+          <a
+            href="https://0xahmedk.github.io/me"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "5px 14px",
+              background: "rgba(232, 160, 32, 0.08)",
+              border: "1px solid rgba(232, 160, 32, 0.3)",
+              borderRadius: 20,
+              color: "#e8a020",
+              fontSize: 12,
+              fontWeight: 600,
+              textDecoration: "none",
+              letterSpacing: "0.04em",
+              transition: "background 0.2s, border-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background =
+                "rgba(232, 160, 32, 0.15)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                "rgba(232, 160, 32, 0.55)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLAnchorElement).style.background =
+                "rgba(232, 160, 32, 0.08)";
+              (e.currentTarget as HTMLAnchorElement).style.borderColor =
+                "rgba(232, 160, 32, 0.3)";
+            }}
+          >
+            More by this author ↗
+          </a>
+        </Box>
+
+        <Box style={{ width: 1, height: 24, background: "#2a2a2e" }} />
+
+        <ViewCounter />
+        <ViewAnalytics />
       </Stack>
     </Container>
   );

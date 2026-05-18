@@ -19,7 +19,8 @@ import {
   IconPlayerPause,
   IconRefresh,
   IconAlertCircle,
-} from "@tabler/icons-react"; // Removed IconBrain
+  IconInfoCircle,
+} from "@tabler/icons-react";
 import "./TrainingLab.css";
 import { simulateTraining, type SimulateResponse } from "../services/api";
 import { VectorInspector } from "../components/VectorInspector";
@@ -55,6 +56,7 @@ export function TrainingLab() {
   const [trainingHistory, setTrainingHistory] =
     useState<SimulateResponse | null>(null);
   const [error, setError] = useState<string>("");
+  const [warning, setWarning] = useState<string>("");
 
   // DVR playback state
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -97,15 +99,37 @@ export function TrainingLab() {
     const wordCount = getWordCount(text);
 
     if (!text.trim()) {
-      setError("Please enter text for training."); // Changed informal language
+      setError("Please enter text for training.");
       return;
     }
 
     if (wordCount > MAX_TRAINING_WORDS) {
       setError(
-        `The training corpus is limited to ${MAX_TRAINING_WORDS} words to ensure optimal visualization performance.`, // Changed informal language
+        `Whoa, whoa wizard - easy there! My server is already questioning its life choices. Keep it to ${MAX_TRAINING_WORDS} words max or we're both going to have a bad time.`,
       );
       return;
+    }
+
+    if (wordCount === 1) {
+      setError(
+        "One word is a dead end, the model needs at least two tokens to have any next-token prediction to make. Add one more word and watch the attention matrix come alive.",
+      );
+      return;
+    }
+
+    const words = text.trim().split(/\s+/);
+    const uniqueTokens = new Set(words.map((w) => w.toLowerCase()));
+
+    if (uniqueTokens.size === 1) {
+      setWarning(
+        "Vocabulary of exactly one token. Every position in the sequence is identical, so the attention matrix has nowhere interesting to look and loss may barely move. This is what a degenerate corpus looks like, run it anyway and see.",
+      );
+    } else if (!/[a-zA-Z]/.test(text)) {
+      setWarning(
+        "No letters detected. The tokenizer is built for words, so numbers and symbols may tokenize unpredictably. You might see something interesting or something completely broken, probably both.",
+      );
+    } else {
+      setWarning("");
     }
 
     setIsTraining(true);
@@ -133,6 +157,7 @@ export function TrainingLab() {
     setCurrentFrame(0);
     setIsPlaying(false);
     setError("");
+    setWarning("");
   };
 
   const handlePlayPause = () => {
@@ -233,6 +258,20 @@ export function TrainingLab() {
             style={{ borderRadius: 0 }}
           >
             {error}
+          </Alert>
+        )}
+
+        {/* Warning Alert — non-blocking, lets training proceed */}
+        {warning && (
+          <Alert
+            icon={<IconInfoCircle size={16} />}
+            title="Heads up"
+            color="yellow"
+            withCloseButton
+            onClose={() => setWarning("")}
+            style={{ borderRadius: 0 }}
+          >
+            {warning}
           </Alert>
         )}
 
@@ -791,7 +830,8 @@ export function TrainingLab() {
                       p="16px"
                       withBorder
                       style={{
-                        minHeight: "100px",
+                        height: "150px",
+                        overflow: "hidden",
                         transition: "background-color 0.2s ease",
                         borderColor: "#333",
                         backgroundColor: "#0A0A0A",
@@ -899,58 +939,76 @@ export function TrainingLab() {
                     {currentSnapshot?.attention_weights &&
                     currentSnapshot.attention_weights.length > 0 ? (
                       <div className="attention-heatmap">
+                        {/* Column token labels */}
+                        <div className="attention-col-header">
+                          <div className="attention-corner" />
+                          {currentSnapshot.input_tokens.map(
+                            (token: string, j: number) => (
+                              <div key={j} className="attention-col-label">
+                                <span>{token}</span>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                        {/* Data rows with row token labels */}
                         {currentSnapshot.attention_weights.map(
                           (row: number[], i: number) => {
-                            const tokens = currentSnapshot.input_tokens;
-
+                            const rowTokens = currentSnapshot.input_tokens;
                             return (
-                              <div key={i} className="attention-row">
-                                {row.map((weight: number, j: number) => {
-                                  const targetToken = tokens[i] || `Token${i}`;
-                                  const sourceToken = tokens[j] || `Token${j}`;
-                                  const isZero = weight < 0.001;
-
-                                  const cellColor = isZero
-                                    ? "rgba(0, 0, 0, 0.3)"
-                                    : `rgba(34, 197, 94, ${weight})`; // Green for attention
-
-                                  return (
-                                    <div
-                                      key={j}
-                                      className="attention-cell"
-                                      style={{
-                                        backgroundColor: cellColor,
-                                        cursor: isZero
-                                          ? "not-allowed"
-                                          : "pointer",
-                                        border: "1px solid #333",
-                                      }}
-                                      onMouseEnter={() => {
-                                        if (!isZero) {
-                                          setHoveredCell({
-                                            row: i,
-                                            col: j,
-                                            value: weight,
-                                            targetToken,
-                                            sourceToken,
-                                          });
+                              <div key={i} className="attention-data-row">
+                                <div className="attention-row-label">
+                                  {rowTokens[i] || `T${i}`}
+                                </div>
+                                <div className="attention-row">
+                                  {row.map((weight: number, j: number) => {
+                                    const targetToken =
+                                      rowTokens[i] || `Token${i}`;
+                                    const sourceToken =
+                                      rowTokens[j] || `Token${j}`;
+                                    const isZero = weight < 0.001;
+                                    const cellColor = isZero
+                                      ? "rgba(0, 0, 0, 0.3)"
+                                      : `rgba(34, 197, 94, ${weight})`;
+                                    return (
+                                      <div
+                                        key={j}
+                                        className="attention-cell"
+                                        style={{
+                                          backgroundColor: cellColor,
+                                          cursor: isZero
+                                            ? "not-allowed"
+                                            : "pointer",
+                                          border: "1px solid #333",
+                                        }}
+                                        onMouseEnter={() => {
+                                          if (!isZero) {
+                                            setHoveredCell({
+                                              row: i,
+                                              col: j,
+                                              value: weight,
+                                              targetToken,
+                                              sourceToken,
+                                            });
+                                          }
+                                        }}
+                                        onMouseLeave={() =>
+                                          setHoveredCell(null)
                                         }
-                                      }}
-                                      onMouseLeave={() => setHoveredCell(null)}
-                                      onClick={() => {
-                                        if (!isZero) {
-                                          setInspectorState({
-                                            opened: true,
-                                            tokenI: targetToken,
-                                            tokenJ: sourceToken,
-                                            row: i,
-                                            col: j,
-                                          });
-                                        }
-                                      }}
-                                    />
-                                  );
-                                })}
+                                        onClick={() => {
+                                          if (!isZero) {
+                                            setInspectorState({
+                                              opened: true,
+                                              tokenI: targetToken,
+                                              tokenJ: sourceToken,
+                                              row: i,
+                                              col: j,
+                                            });
+                                          }
+                                        }}
+                                      />
+                                    );
+                                  })}
+                                </div>
                               </div>
                             );
                           },
